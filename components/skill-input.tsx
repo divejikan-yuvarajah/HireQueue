@@ -2,16 +2,22 @@
 
 import { useState, type KeyboardEvent } from "react"
 import { X } from "lucide-react"
-import { Input } from "@/components/ui/input"
 
 type Props = {
   value: string[]
   onChange: (next: string[]) => void
   placeholder?: string
   id?: string
+  variant?: "default" | "ghost"
 }
 
-export function SkillInput({ value, onChange, placeholder, id }: Props) {
+export function SkillInput({
+  value,
+  onChange,
+  placeholder,
+  id,
+  variant = "default",
+}: Props) {
   const [draft, setDraft] = useState("")
 
   function commit() {
@@ -39,31 +45,37 @@ export function SkillInput({ value, onChange, placeholder, id }: Props) {
   }
 
   return (
-    <div className="flex flex-wrap gap-2 p-2 min-h-[2.75rem] rounded-lg border border-input bg-background focus-within:ring-2 focus-within:ring-ring/40 focus-within:border-ring">
+    <div
+      className={`flex flex-wrap gap-1.5 p-2 min-h-[44px] border ${
+        variant === "ghost"
+          ? "border-hairline bg-transparent"
+          : "border-foreground/30 bg-card"
+      } focus-within:border-foreground transition-colors rounded-none`}
+    >
       {value.map((skill, i) => (
         <span
           key={`${skill}-${i}`}
-          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium"
+          className="inline-flex items-center gap-1.5 px-2.5 h-7 bg-foreground text-background text-xs font-mono uppercase tracking-[0.1em]"
         >
           {skill}
           <button
             type="button"
             onClick={() => remove(i)}
-            className="hover:bg-primary/20 rounded-full p-0.5 -mr-1"
+            className="opacity-60 hover:opacity-100"
             aria-label={`Remove ${skill}`}
           >
             <X className="h-3 w-3" />
           </button>
         </span>
       ))}
-      <Input
+      <input
         id={id}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={commit}
         placeholder={value.length === 0 ? placeholder : ""}
-        className="flex-1 min-w-[8rem] border-0 shadow-none focus-visible:ring-0 px-2 h-8"
+        className="flex-1 min-w-[10rem] outline-none px-2 h-7 bg-transparent text-sm placeholder:text-muted-foreground"
       />
     </div>
   )

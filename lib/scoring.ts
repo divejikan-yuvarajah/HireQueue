@@ -19,7 +19,13 @@ function normalize(s: string) {
   return s.trim().toLowerCase()
 }
 
-export function scoreApplicant(applicant: ScoreInput, job: Job): {
+export function scoreApplicant(
+  applicant: ScoreInput,
+  job: Pick<
+    Job,
+    "min_experience_yrs" | "required_skills" | "preferred_location" | "weights"
+  >,
+): {
   score: number
   tier: Tier
   breakdown: ScoreBreakdown
@@ -29,7 +35,6 @@ export function scoreApplicant(applicant: ScoreInput, job: Job): {
 
   let exp_score: number
   if (minYrs === 0) {
-    // No minimum required: any experience scales nicely up to 5 yrs = 100.
     exp_score = Math.min(100, (yrs / 5) * 100)
   } else if (yrs >= minYrs * 1.5) {
     exp_score = 100
@@ -42,7 +47,6 @@ export function scoreApplicant(applicant: ScoreInput, job: Job): {
   const matched_skills_norm = required.filter((s) => have.includes(s))
   const missing_skills_norm = required.filter((s) => !have.includes(s))
 
-  // Map normalized matches back to the original casing from the job spec.
   const matched_skills = (job.required_skills ?? []).filter((s) =>
     matched_skills_norm.includes(normalize(s)),
   )
@@ -51,18 +55,24 @@ export function scoreApplicant(applicant: ScoreInput, job: Job): {
   )
 
   const skill_score =
-    required.length === 0 ? 100 : (matched_skills_norm.length / required.length) * 100
+    required.length === 0
+      ? 100
+      : (matched_skills_norm.length / required.length) * 100
 
   const edu_score = EDU_POINTS[applicant.education] ?? 0
 
-  const loc_score =
-    !job.preferred_location?.trim()
+  const loc_score = !job.preferred_location?.trim()
+    ? 100
+    : normalize(job.preferred_location) === normalize(applicant.location)
       ? 100
-      : normalize(job.preferred_location) === normalize(applicant.location)
-        ? 100
-        : 0
+      : 0
 
-  const w: Weights = job.weights ?? { experience: 35, skills: 35, education: 15, location: 15 }
+  const w: Weights = job.weights ?? {
+    experience: 35,
+    skills: 35,
+    education: 15,
+    location: 15,
+  }
   const total =
     (exp_score * w.experience +
       skill_score * w.skills +
@@ -71,9 +81,8 @@ export function scoreApplicant(applicant: ScoreInput, job: Job): {
     100
 
   const score = Math.round(total * 10) / 10
-  const tier: Tier = score >= 75 ? "safe" : score >= 50 ? "borderline" : "reach"
+  const tier: Tier = score >= 75 ? "top" : score >= 50 ? "match" : "reach"
 
-  // Component contributions out of their weighted budgets.
   const breakdown: ScoreBreakdown = {
     experience: Math.round(((exp_score * w.experience) / 100) * 10) / 10,
     skills: Math.round(((skill_score * w.skills) / 100) * 10) / 10,
@@ -87,28 +96,28 @@ export function scoreApplicant(applicant: ScoreInput, job: Job): {
 }
 
 export const TIER_META = {
-  safe: {
-    label: "SAFE",
-    color: "bg-success text-success-foreground",
-    ring: "ring-success/30",
-    text: "text-success",
-    bg: "bg-success/10",
-    border: "border-success/20",
+  top: {
+    label: "TOP",
+    bg: "bg-tier-top",
+    text: "text-tier-top",
+    soft: "bg-tier-top-soft",
+    foreground: "text-tier-top-foreground",
+    border: "border-tier-top/30",
   },
-  borderline: {
-    label: "BORDERLINE",
-    color: "bg-warning text-warning-foreground",
-    ring: "ring-warning/30",
-    text: "text-warning",
-    bg: "bg-warning/10",
-    border: "border-warning/20",
+  match: {
+    label: "MATCH",
+    bg: "bg-tier-match",
+    text: "text-tier-match",
+    soft: "bg-tier-match-soft",
+    foreground: "text-tier-match-foreground",
+    border: "border-tier-match/30",
   },
   reach: {
     label: "REACH",
-    color: "bg-danger text-danger-foreground",
-    ring: "ring-danger/30",
-    text: "text-danger",
-    bg: "bg-danger/10",
-    border: "border-danger/20",
+    bg: "bg-tier-reach",
+    text: "text-tier-reach",
+    soft: "bg-tier-reach-soft",
+    foreground: "text-tier-reach-foreground",
+    border: "border-tier-reach/30",
   },
 } as const
