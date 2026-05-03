@@ -23,3 +23,17 @@ export function avatarColor(seed: string) {
   }
   return PALETTE[hash % PALETTE.length]
 }
+
+function hashStr(s: string) {
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
+  return h
+}
+
+/** Return a hue number 0-360 for a given seed string */
+export function avatarHueFor(seed: string) {
+  return hashStr(seed) % 360
+}
+
+/** Alias for initialsOf */
+export const initialsFor = initialsOf

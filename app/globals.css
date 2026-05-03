@@ -153,6 +153,11 @@
   --color-tier-reach-foreground: var(--tier-reach-foreground);
   --color-tier-reach-soft: var(--tier-reach-soft);
 
+  /* Shorthand tier aliases for convenience: bg-top, text-top, etc. */
+  --color-top: var(--tier-top);
+  --color-match: var(--accent);
+  --color-reach: var(--tier-reach);
+
   --color-border: var(--border);
   --color-hairline: var(--hairline);
   --color-input: var(--input);

@@ -24,7 +24,7 @@ const navItems = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/jobs", label: "Jobs", icon: Briefcase },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/jobs/templates", label: "Templates", icon: FileText },
+  { href: "/templates", label: "Templates", icon: FileText },
 ]
 
 export function AppShell({

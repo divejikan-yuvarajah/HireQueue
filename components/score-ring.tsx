@@ -10,24 +10,37 @@ const tierColor: Record<Tier, string> = {
   reach: "var(--tier-reach)",
 }
 
+function tierFromScore(score: number): Tier {
+  if (score >= 75) return "top"
+  if (score >= 50) return "match"
+  return "reach"
+}
+
 export function ScoreRing({
   score,
   tier,
   size = 96,
-  stroke = 6,
+  stroke,
+  strokeWidth,
   className,
   showLabel = true,
 }: {
   score: number
-  tier: Tier
+  tier?: Tier
   size?: number
   stroke?: number
+  strokeWidth?: number
   className?: string
   showLabel?: boolean
 }) {
-  const r = (size - stroke) / 2
+  const resolvedTier = tier ?? tierFromScore(score)
+  const resolvedStroke = stroke ?? strokeWidth ?? 6
+  const r = (size - resolvedStroke) / 2
   const c = 2 * Math.PI * r
   const pct = Math.max(0, Math.min(100, score)) / 100
+
+  const labelSize = size >= 96 ? "text-2xl" : size >= 56 ? "text-base" : "text-sm"
+
   return (
     <div
       className={cn("relative inline-flex items-center justify-center", className)}
@@ -39,16 +52,16 @@ export function ScoreRing({
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="var(--hairline)"
-          strokeWidth={stroke}
+          stroke="var(--border)"
+          strokeWidth={resolvedStroke}
         />
         <motion.circle
           cx={size / 2}
           cy={size / 2}
           r={r}
           fill="none"
-          stroke={tierColor[tier]}
-          strokeWidth={stroke}
+          stroke={tierColor[resolvedTier]}
+          strokeWidth={resolvedStroke}
           strokeLinecap="round"
           strokeDasharray={c}
           initial={{ strokeDashoffset: c }}
@@ -58,11 +71,8 @@ export function ScoreRing({
       </svg>
       {showLabel && (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-num text-2xl leading-none tracking-tighter">
+          <span className={cn("font-mono leading-none tracking-tighter font-bold tabular-nums", labelSize)}>
             {Math.round(score)}
-          </span>
-          <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
-            score
           </span>
         </div>
       )}
